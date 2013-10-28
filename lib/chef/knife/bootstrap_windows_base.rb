@@ -127,11 +127,20 @@ class Chef
       end
 
       def render_template(template=nil)
-        if config[:encrypted_data_bag_secret_file]
-          config[:encrypted_data_bag_secret] = Chef::EncryptedDataBagItem.load_secret(config[:encrypted_data_bag_secret_file])
+        result = nil
+        begin
+          if config[:encrypted_data_bag_secret_file]
+            config[:encrypted_data_bag_secret] = Chef::EncryptedDataBagItem.load_secret(config[:encrypted_data_bag_secret_file])
+          end
+          context = Knife::Core::WindowsBootstrapContext.new(config, config[:run_list], Chef::Config)
+          result = Erubis::Eruby.new(template).evaluate(context)
+        rescue => exception
+          puts exception
+          puts exception.backtrace
+          raise exception
         end
-        context = Knife::Core::WindowsBootstrapContext.new(config, config[:run_list], Chef::Config)
-        Erubis::Eruby.new(template).evaluate(context)
+
+        result
       end
 
       def bootstrap(proto=nil)
@@ -151,12 +160,27 @@ class Chef
           begin
             run_command("cmd.exe /C echo \"Rendering #{bootstrap_bat_file} chunk #{chunk_num}\" && #{command_chunk}")
           rescue SystemExit => e
+            puts "Command failed"
             raise unless e.success?
+          rescue => exception
+            puts "Something failed"
+            puts exception
+            puts exception.backtrace
           end
         end
 
         # execute the bootstrap.bat file
-        run_command(bootstrap_command)
+        result = nil
+        begin
+          result = run_command(bootstrap_command)
+        rescue => exception
+          puts "Hit exception"
+          puts exception
+          puts exception.backtrace
+          raise exception
+        end
+
+        result
       end
 
       def bootstrap_command
