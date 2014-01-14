@@ -140,9 +140,13 @@ param(
    [String] $localPath
 )
 
-$webClient = new-object System.Net.WebClient;
+$proxy = New-Object System.Net.WebProxy($env:HTTP_PROXY)
+$proxy.useDefaultCredentials = $true
 
+$webClient = new-object System.Net.WebClient;
+$webClient.proxy = $proxy
 $webClient.DownloadFile($remoteUrl, $localPath);
+
 WGET_PS
 
           escape_and_echo(win_wget_ps)
