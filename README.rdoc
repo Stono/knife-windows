@@ -1,3 +1,5 @@
+Stono: I've forked this because the powershell script to download chef-client ignores HTTP_PROXY... it now doesn't.
+
 = Knife Windows Plugin
 
 = DESCRIPTION:
