@@ -140,11 +140,16 @@ param(
    [String] $localPath
 )
 
-$proxy = New-Object System.Net.WebProxy($env:HTTP_PROXY)
-$proxy.useDefaultCredentials = $true
-
 $webClient = new-object System.Net.WebClient;
-$webClient.proxy = $proxy
+
+if ($env:HTTP_PROXY) {
+  $proxy = New-Object System.Net.WebProxy($env:HTTP_PROXY)
+  $proxy.useDefaultCredentials = $true
+  $webClient.proxy = $proxy
+
+  echo "Using Proxy: $env:HTTP_PROXY"
+} 
+
 $webClient.DownloadFile($remoteUrl, $localPath);
 
 WGET_PS
